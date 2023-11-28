@@ -11,9 +11,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-
-
-
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -31,6 +30,7 @@ import { useStoremodal } from '@/hooks/use-store-modal';
 
 const StoreModal = () => {
 
+    const router = useRouter();
 
     const all = useStoremodal()
     const { isOpen, onOpen, onClose } = all;
@@ -39,6 +39,10 @@ const StoreModal = () => {
     const formSchema = z.object({
         name: z.string().min(2).max(50),
     });
+
+
+
+    const [loading, setLoading] = useState(false);
 
 //define from 
 
@@ -51,10 +55,20 @@ const StoreModal = () => {
 
 
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+       try {
+        setLoading(true);
+const res=await axios.post('/api/store',values)
+setLoading(false);
+router.refresh();
+onClose();
+router.push(`/${res.data.id}`);
+
+
+       }
+       catch(error) {
+        console.log(error);
+       }
       }
 
     return (
@@ -83,7 +97,11 @@ const StoreModal = () => {
         </div>
         <div className='flex justify-end'>
         <Button 
-         type="submit">Submit</Button>
+        disabled={loading}
+         type="submit"
+         >
+            Submit
+        </Button>
        </div>
 
         </form> 
